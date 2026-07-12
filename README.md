@@ -1,5 +1,9 @@
 # Build an AI campaign orchestrator with Amazon Bedrock and AWS End User Messaging
 
+> ⚠️ **SAMPLE / DEMO APPLICATION**
+>
+> This is a **sample application for educational purposes only**. It is **NOT suitable for production use** without additional security hardening, compliance review, and proper AWS End User Messaging + Amazon Bedrock configuration. The stack ships with mock customer data seeded by `scripts/seed_demo_data.py`, permissive default rate limits, and no AWS WAF in front of the API. Do not deploy as-is into a regulated environment.
+
 Companion code for the AWS blog post *[Build an AI campaign orchestrator with Amazon Bedrock and AWS End User Messaging](#)*.
 
 Marketing teams running large-scale campaigns often send the same message across SMS, WhatsApp, and email regardless of how each customer engages or how many messages they've already received that week. This sample shows how to build a campaign orchestrator on AWS End User Messaging and Amazon Bedrock that predicts the best channel for each customer, adapts content per channel, and holds back messages to fatigued or unhappy customers.
@@ -19,7 +23,7 @@ Marketing teams running large-scale campaigns often send the same message across
 
 ## Architecture
 
-![AI-powered campaign orchestrator architecture](docs/cpaas-%20new%20architecture.png)
+![AI-powered campaign orchestrator architecture](docs/architecture.png)
 
 A marketer types a plain-language instruction into the campaign launcher. Amazon API Gateway forwards the instruction to an AWS Lambda function, which starts an AWS Step Functions state machine. The state machine walks the campaign through seven stages, from understanding the instruction to dispatching messages on the right channels.
 
@@ -219,7 +223,7 @@ With semantic segmentation on:
 │   └── seed_demo_data.py
 ├── docs/
 │   ├── architecture.py                        # Regenerate the diagram
-│   └── cpaas- new architecture.png
+│   └── architecture.png
 └── src/ai_cpaas_demo/web/                     # Optional local Flask UI
 ```
 
