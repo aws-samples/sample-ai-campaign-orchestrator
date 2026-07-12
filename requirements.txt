@@ -1,0 +1,10 @@
+# Dependencies for the local Flask UI (src/ai_cpaas_demo/web/app.py)
+# and the demo data seeder (scripts/seed_demo_data.py).
+#
+# The deployed Lambdas (infrastructure/lambdas/) only use boto3, which is
+# already provided by the python3.13 Lambda runtime.
+
+flask>=3.0.0
+flask-cors>=4.0.0
+gunicorn>=21.2.0
+boto3>=1.34.0

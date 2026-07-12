@@ -1,0 +1,25 @@
+Applied AI CPaaS Demo
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+**********************
+THIRD-PARTY COMPONENTS
+**********************
+
+This software includes third-party software subject to the following copyrights:
+
+- FastAPI - Copyright (c) 2018 Sebastián Ramírez - MIT License
+- Flask - Copyright (c) 2010 Pallets - BSD License
+- Pydantic - Copyright (c) 2017 Samuel Colvin - MIT License
+- LangChain - Copyright (c) 2022 LangChain, Inc. - MIT License
+- boto3 - Copyright (c) 2013 Amazon.com, Inc. - Apache License 2.0
+- scikit-learn - Copyright (c) 2007-2024 The scikit-learn developers - BSD License
+- pandas - Copyright (c) 2008-2011 AQR Capital Management, LLC, Lambda Foundry, Inc. and PyData Development Team - BSD License
+- NumPy - Copyright (c) 2005-2024 NumPy Developers - BSD License
+- pytest - Copyright (c) 2004 Holger Krekel and others - MIT License
+- Faker - Copyright (c) 2012 joke2k - MIT License
+- httpx - Copyright (c) 2019 Tom Christie - BSD License
+- python-jose - Copyright (c) 2016 Michael Davis - MIT License
+- passlib - Copyright (c) 2008-2020 Eli Collins - BSD License
+- gunicorn - Copyright (c) 2009-2015 (c) Paul J. Davis, Benoît Chesneau - MIT License
+
+The full text of these licenses is available in the respective packages.

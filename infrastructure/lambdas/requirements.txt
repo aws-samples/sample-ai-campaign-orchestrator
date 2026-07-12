@@ -1,0 +1,5 @@
+# Stage Lambdas only depend on boto3 (already in the Lambda runtime) and
+# opensearch-py (when EnableSemanticSearch=true and segment_customers queries
+# the OpenSearch Serverless vector collection).
+
+opensearch-py>=2.4

@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI-CPaaS campaign launcher</title>
+<style>
+  :root { --fg:#1c1c1c; --muted:#666; --border:#d8d8d8; --bg:#f8f8f8; --accent:#232f3e; --ok:#1a6b2c; --okBg:#d4f4dd; --warn:#6b5400; --warnBg:#fff4cc; --err:#8a1f1f; --errBg:#f9d4d4; }
+  * { box-sizing: border-box; }
+  body { font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; max-width: 760px; margin: 40px auto; padding: 0 22px; color: var(--fg); }
+  h1 { margin: 0 0 4px; font-size: 26px; }
+  .subtitle { color: var(--muted); margin: 0 0 30px; }
+  .card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 22px; margin-bottom: 18px; }
+  label { display: block; font-weight: 600; font-size: 12px; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin: 14px 0 5px; }
+  textarea, input[type=text], select { width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 6px; font: inherit; background: white; }
+  textarea { min-height: 70px; resize: vertical; }
+  .examples { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .ex-btn { font-size: 12px; padding: 4px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; cursor: pointer; color: var(--fg); }
+  .ex-btn:hover { background: #eee; }
+  button.primary { margin-top: 18px; padding: 11px 20px; border: 0; border-radius: 6px; background: var(--accent); color: white; font: inherit; font-weight: 600; cursor: pointer; }
+  button.primary:disabled { background: #888; cursor: wait; }
+  .pill { display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .pill-running { background: var(--warnBg); color: var(--warn); }
+  .pill-complete { background: var(--okBg); color: var(--ok); }
+  .pill-failed { background: var(--errBg); color: var(--err); }
+  .stages { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 16px 0 6px; font-size: 11px; text-align: center; }
+  .stage { padding: 8px 4px; border: 1px solid var(--border); border-radius: 5px; background: var(--bg); color: var(--muted); }
+  .stage.active { background: var(--warnBg); color: var(--warn); border-color: var(--warn); }
+  .stage.done { background: var(--okBg); color: var(--ok); border-color: var(--ok); }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
+  .metric { background: var(--bg); padding: 14px; border-radius: 8px; text-align: center; }
+  .metric .v { font-size: 26px; font-weight: 700; color: var(--accent); }
+  .metric .l { font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); margin-top: 4px; }
+  .channels { margin-top: 14px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .ch { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
+  .ch .name { font-weight: 600; text-transform: uppercase; font-size: 11px; color: var(--muted); }
+  .ch .nums { margin-top: 4px; }
+  .ch .ok { color: var(--ok); font-weight: 600; }
+  .ch .fail { color: var(--err); font-weight: 600; }
+  pre { background: #1c1c1c; color: #e8e8e8; padding: 14px; border-radius: 6px; overflow: auto; font-size: 12px; max-height: 260px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  small { color: var(--muted); }
+  code { background: var(--bg); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h1>AI-CPaaS campaign launcher</h1>
+<p class="subtitle">Type a plain-language instruction. The orchestrator parses it, segments customers, predicts channels, suppresses fatigued or unhappy contacts, adapts content, and dispatches via AWS End User Messaging or SES.</p>
+
+<div class="card">
+  <label for="instruction">Campaign instruction</label>
+  <textarea id="instruction">Send the Andaman package to Mumbai customers who haven't booked in six months</textarea>
+  <div class="examples">
+    <button type="button" class="ex-btn">Send the Andaman package to Mumbai customers who haven't booked in six months</button>
+    <button type="button" class="ex-btn">Notify Bangalore customers about new laptop deals under 50k</button>
+    <button type="button" class="ex-btn">Win back Delhi customers with abandoned carts</button>
+  </div>
+
+  <label for="waTemplate">WhatsApp template <small style="text-transform:none;letter-spacing:0;font-weight:normal">(required if any predicted channel is WhatsApp; ignored otherwise)</small></label>
+  <select id="waTemplate"><option value="">— none / load from AWS —</option></select>
+
+  <button id="launch" class="primary">Launch campaign</button>
+</div>
+
+<div id="status-card" class="card" style="display:none">
+  <div class="row">
+    <div><strong id="campaignIdLabel"></strong></div>
+    <span id="status-pill" class="pill pill-running">starting</span>
+  </div>
+  <div class="stages" id="stages">
+    <div class="stage" data-s="parse">parse</div>
+    <div class="stage" data-s="segment">segment</div>
+    <div class="stage" data-s="predict">predict</div>
+    <div class="stage" data-s="safety">safety</div>
+    <div class="stage" data-s="adapt">adapt</div>
+    <div class="stage" data-s="deliver">deliver</div>
+    <div class="stage" data-s="record">record</div>
+  </div>
+  <div id="summary" style="display:none">
+    <div class="summary-grid">
+      <div class="metric"><div class="v" id="m-eligible">0</div><div class="l">Eligible</div></div>
+      <div class="metric"><div class="v" id="m-approved">0</div><div class="l">Approved</div></div>
+      <div class="metric"><div class="v" id="m-suppressed">0</div><div class="l">Suppressed</div></div>
+      <div class="metric"><div class="v" id="m-sent">0</div><div class="l">Sent</div></div>
+    </div>
+    <div class="channels" id="channels"></div>
+    <details style="margin-top:14px">
+      <summary><small>Raw response</small></summary>
+      <pre id="raw"></pre>
+    </details>
+  </div>
+</div>
+
+<small>API: <code id="env"></code></small>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const STAGES = ['parse','segment','predict','safety','adapt','deliver','record'];
+let pollTimer = null;
+
+document.querySelectorAll('.ex-btn').forEach(b =>
+  b.addEventListener('click', () => { $('instruction').value = b.textContent.trim(); })
+);
+
+fetch('/api/environment').then(r => r.json()).then(e => {
+  $('env').textContent = `${e.region || ''} · ${e.is_production ? 'production' : 'local'}`;
+}).catch(() => {});
+
+fetch('/api/whatsapp-templates').then(r => r.json()).then(d => {
+  if (!d.success || !d.templates || d.templates.length === 0) return;
+  const sel = $('waTemplate');
+  sel.innerHTML = '<option value="">— no template —</option>';
+  d.templates.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = JSON.stringify({ name: t.template_name, language: t.language });
+    opt.textContent = `${t.template_name} (${t.language}, ${t.category})`;
+    sel.appendChild(opt);
+  });
+}).catch(() => {});
+
+function setPill(text, kind) { const p = $('status-pill'); p.textContent = text; p.className = `pill pill-${kind}`; }
+function setStage(name, state) {
+  document.querySelectorAll('.stage').forEach(el => {
+    if (el.dataset.s === name) {
+      el.classList.remove('active','done');
+      if (state) el.classList.add(state);
+    }
+  });
+}
+function advanceStage(elapsed) {
+  const idx = Math.min(STAGES.length - 1, Math.floor(elapsed / 1500));
+  STAGES.forEach((s, i) => {
+    if (i < idx) setStage(s, 'done');
+    else if (i === idx) setStage(s, 'active');
+    else setStage(s, null);
+  });
+}
+function markAllDone() { STAGES.forEach(s => setStage(s, 'done')); }
+
+$('launch').addEventListener('click', async () => {
+  const instruction = $('instruction').value.trim();
+  if (!instruction) return;
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+
+  $('launch').disabled = true;
+  $('status-card').style.display = 'block';
+  $('summary').style.display = 'none';
+  STAGES.forEach(s => setStage(s, null));
+  $('campaignIdLabel').textContent = '';
+  setPill('starting', 'running');
+
+  const tplRaw = $('waTemplate').value;
+  const payload = { query: instruction };
+  if (tplRaw) {
+    try { payload.whatsapp_template = JSON.parse(tplRaw); } catch (_) {}
+  }
+
+  let launch;
+  try {
+    const res = await fetch('/api/intelligent-query', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    launch = await res.json();
+    if (!res.ok || !launch.success) throw new Error(launch.error || `HTTP ${res.status}`);
+  } catch (err) {
+    setPill(`failed: ${err.message}`, 'failed');
+    $('launch').disabled = false;
+    return;
+  }
+
+  $('campaignIdLabel').textContent = launch.campaign_id;
+  setPill('running', 'running');
+
+  const start = Date.now();
+  pollTimer = setInterval(async () => {
+    const elapsed = Date.now() - start;
+    advanceStage(elapsed);
+
+    if (elapsed > 120000) {
+      clearInterval(pollTimer); pollTimer = null;
+      setPill('timed out after 2m', 'failed');
+      $('launch').disabled = false;
+      return;
+    }
+
+    try {
+      const r = await fetch(`/api/campaign-status/${encodeURIComponent(launch.campaign_id)}`);
+      if (r.status === 200) {
+        const body = await r.json();
+        clearInterval(pollTimer); pollTimer = null;
+        markAllDone();
+        renderSummary(body);
+        setPill('complete', 'complete');
+        $('launch').disabled = false;
+      }
+    } catch (_) { /* keep polling */ }
+  }, 2000);
+});
+
+function renderSummary(body) {
+  const s = body.summary || {};
+  $('m-eligible').textContent = s.eligible_count || 0;
+  $('m-approved').textContent = s.approved_count || 0;
+  $('m-suppressed').textContent = s.suppressed_count || 0;
+  $('m-sent').textContent = (s.delivery && s.delivery.sent) || 0;
+
+  const byCh = (s.delivery && s.delivery.by_channel) || {};
+  $('channels').innerHTML = ['sms','whatsapp','email'].map(ch => {
+    const c = byCh[ch] || { sent: 0, failed: 0 };
+    return `<div class="ch">
+      <div class="name">${ch}</div>
+      <div class="nums"><span class="ok">${c.sent} sent</span> · <span class="fail">${c.failed} failed</span></div>
+    </div>`;
+  }).join('');
+
+  $('raw').textContent = JSON.stringify(body, null, 2);
+  $('summary').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
