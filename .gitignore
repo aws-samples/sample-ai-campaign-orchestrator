@@ -162,3 +162,6 @@ dmypy.json
 
 # pytype static type analyzer
 .pytype/
+
+# Local agent context (saved web pages, notes)
+AgentContext/

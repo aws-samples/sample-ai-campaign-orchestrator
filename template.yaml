@@ -31,7 +31,13 @@ Parameters:
   PhonePoolId:
     Type: String
     Default: ''
-    Description: SMS phone pool ID for AWS End User Messaging (sms-voice). Leave blank to skip SMS.
+    Description: SMS phone pool ID (or phone number ID) for AWS End User Messaging (sms-voice). Leave blank to skip SMS.
+
+  SmsMessageType:
+    Type: String
+    Default: 'PROMOTIONAL'
+    AllowedValues: ['PROMOTIONAL', 'TRANSACTIONAL']
+    Description: Must match the message type your origination identity is registered for, or SendTextMessage rejects the send.
 
   SenderEmail:
     Type: String
@@ -326,6 +332,7 @@ Resources:
             Action: 'sts:AssumeRole'
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
       Policies:
         - PolicyName: SegmentStagePermissions
           PolicyDocument:
@@ -469,6 +476,7 @@ Resources:
       Environment:
         Variables:
           PHONE_POOL_ID: !Ref PhonePoolId
+          SMS_MESSAGE_TYPE: !Ref SmsMessageType
           WHATSAPP_PHONE_NUMBER_ID: !Ref WhatsAppPhoneNumberId
           SENDER_EMAIL: !Ref SenderEmail
           DELIVERY_TRACKING_TABLE: !Ref DeliveryTrackingTable
