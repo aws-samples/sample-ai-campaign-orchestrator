@@ -71,6 +71,7 @@ The stack deploys without any channel credentials, and the DeliverMessages stage
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SenderEmail`           | A [verified SES identity](https://docs.aws.amazon.com/ses/latest/dg/creating-identities.html). In the SES sandbox both the sender and every recipient must be verified. |
 | `PhonePoolId`           | An [AWS End User Messaging SMS phone pool ID](https://docs.aws.amazon.com/sms-voice/latest/userguide/phone-pools.html). New accounts start in the SMS sandbox.         |
+| `SmsMessageType`        | `PROMOTIONAL` (default) or `TRANSACTIONAL`. Must match the message type your phone number or pool is registered for, or `SendTextMessage` rejects the send with `INVALID_PARAMETER`. |
 | `WhatsAppPhoneNumberId` | An [AWS End User Messaging Social phone number ID](https://docs.aws.amazon.com/social-messaging/latest/userguide/getting-started.html) from a linked WhatsApp Business Account. |
 
 ### WhatsApp templates are required

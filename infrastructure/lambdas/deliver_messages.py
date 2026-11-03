@@ -43,6 +43,7 @@ _tracking = boto3.resource("dynamodb").Table(os.environ["DELIVERY_TRACKING_TABLE
 _rate_limits = boto3.resource("dynamodb").Table(os.environ["RATE_LIMITS_TABLE"])
 
 _phone_pool_id = os.environ.get("PHONE_POOL_ID")
+_sms_message_type = os.environ.get("SMS_MESSAGE_TYPE", "PROMOTIONAL")
 _whatsapp_phone_number_id = os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
 _sender_email = os.environ["SENDER_EMAIL"]
 
@@ -54,7 +55,7 @@ def _send_sms(msg, campaign_id, whatsapp_template):
         DestinationPhoneNumber=msg["phone"],
         OriginationIdentity=_phone_pool_id,
         MessageBody=msg["body"],
-        MessageType="PROMOTIONAL",
+        MessageType=_sms_message_type,
     )
     return response["MessageId"]
 
